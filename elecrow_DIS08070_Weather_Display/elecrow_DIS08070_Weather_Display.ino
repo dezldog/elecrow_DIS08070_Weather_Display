@@ -1,13 +1,14 @@
 /*
  * ESP32-S3 Weather Display with Symbol Fonts
  * For ELECROW 7" ESP32 Display (DIS08070H) - 800x480 RGB
- * ceh 11NOV2024
+ * 
  * REQUIRED FILES (must be in same folder):
  * - lv_font_weather_symbols_36.c
  * - lv_font_weather_symbols_48.c
  * - lv_font_weather_symbols_64.c
- * This code is free to use and modify. Attribution appreciated but not required.
- *  */
+ * - lv_font_weather_symbols_92.c
+ * - lv_font_weather_symbols_120.c
+ */
 
 #include <lvgl.h>
 #include <LovyanGFX.hpp>
@@ -23,16 +24,18 @@
 LV_FONT_DECLARE(lv_font_weather_symbols_36);
 LV_FONT_DECLARE(lv_font_weather_symbols_48);
 LV_FONT_DECLARE(lv_font_weather_symbols_64);
+LV_FONT_DECLARE(lv_font_weather_symbols_92);
+LV_FONT_DECLARE(lv_font_weather_symbols_120);
 
 // ===== CONFIGURATION =====
-const char* ssid = "your ssid";
-const char* password = "your pw";
+const char* ssid = "airwisp.net";
+const char* password = "s2mantha";
 
 const long gmtOffset_sec = -8 * 3600;
 const int daylightOffset_sec = 3600;
 
-const float latitude = 38.3986; //your Latitude
-const float longitude = -122.8790; //your Longitude
+const float latitude = 38.3986;
+const float longitude = -122.8790;
 const char* locationName = "Sebastopol, CA";
 
 const char* ntpServer = "pool.ntp.org";
@@ -111,7 +114,7 @@ lv_obj_t *currentCondLabel, *currentCondTextLabel, *currentTempLabel;
 lv_obj_t *humidityLabel, *pressureLabel, *feelsLikeLabel;
 lv_obj_t *hourlyContainer, *dailyContainer, *statsLabel;
 
-// Data structure to hold weather data
+// Data structure - UPDATED to store weather codes
 struct {
   float currentTemp, feelsLike, humidity, pressure;
   int currentCode;  // Store weather code instead of string
@@ -132,7 +135,7 @@ void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color
   lv_disp_flush_ready(disp);
 }
 
-// Get weather condition
+// Get weather condition text (kept for fallback/debugging)
 String getWeatherCondition(int code) {
   if (code == 0) return "Clear";
   if (code == 1) return "Mostly Clear";
@@ -147,7 +150,7 @@ String getWeatherCondition(int code) {
   return "Unknown";
 }
 
-// Get weather symbol from code
+// NEW: Get weather symbol from code
 String getWeatherSymbol(int code) {
   // Clear Sky (0)
   if (code == 0) return "\u263C";        // ☼ White Sun with Rays
@@ -192,7 +195,7 @@ String getWeatherSymbol(int code) {
   return "?";
 }
 
-//Get symbol color based on weather code
+// NEW: Get symbol color based on weather code
 uint32_t getWeatherSymbolColor(int code) {
   if (code == 0 || code == 1) return COLOR_SUN;           // Clear/Mostly Clear
   if (code == 2) return COLOR_SUN;                         // Partly Cloudy
@@ -233,13 +236,13 @@ void createUI() {
   lv_obj_set_style_text_color(sunsetLabel, lv_color_hex(COLOR_TEXT_SECONDARY), 0);
   lv_obj_set_pos(sunsetLabel, 180, 75);
   
-  //Current condition now uses 64pt weather symbol font (HIGH on screen)
+  // Current condition uses 120pt weather symbol (Y=3)
   currentCondLabel = lv_label_create(lv_scr_act());
-  lv_obj_set_style_text_font(currentCondLabel, &lv_font_weather_symbols_64, 0);
+  lv_obj_set_style_text_font(currentCondLabel, &lv_font_weather_symbols_120, 0);
   lv_obj_set_style_text_color(currentCondLabel, lv_color_hex(COLOR_ACCENT), 0);
-  lv_obj_align(currentCondLabel, LV_ALIGN_TOP_MID, 0, 50);
+  lv_obj_align(currentCondLabel, LV_ALIGN_TOP_MID, 0, 3);
   
-  // Weather condition text label - MOVED UP MORE
+  // Text label - STAYS AT Y=112 - DO NOT MOVE!
   currentCondTextLabel = lv_label_create(lv_scr_act());
   lv_obj_set_style_text_font(currentCondTextLabel, &lv_font_montserrat_20, 0);
   lv_obj_set_style_text_color(currentCondTextLabel, lv_color_hex(COLOR_TEXT_PRIMARY), 0);
@@ -284,7 +287,7 @@ void createUI() {
   lv_obj_set_flex_flow(hourlyContainer, LV_FLEX_FLOW_ROW);
   lv_obj_set_flex_align(hourlyContainer, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
   
-  //Hourly cards with 36pt weather symbol font
+  // UPDATED: Hourly cards with 36pt weather symbol font
   for (int i = 0; i < 6; i++) {
     lv_obj_t *card = lv_obj_create(hourlyContainer);
     lv_obj_set_size(card, 120, 100);
@@ -312,7 +315,7 @@ void createUI() {
     lv_obj_set_style_text_color(tempL, lv_color_hex(COLOR_ACCENT), 0);
     lv_obj_align(tempL, LV_ALIGN_TOP_MID, 0, 18);
     
-    //Weather symbol instead of text
+    // UPDATED: Weather symbol instead of text
     lv_obj_t *condL = lv_label_create(card);
     lv_obj_set_style_text_font(condL, &lv_font_weather_symbols_36, 0);
     lv_obj_set_style_text_color(condL, lv_color_hex(COLOR_TEXT_SECONDARY), 0);
@@ -343,7 +346,7 @@ void createUI() {
   lv_obj_set_flex_flow(dailyContainer, LV_FLEX_FLOW_ROW);
   lv_obj_set_flex_align(dailyContainer, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
   
-  //Daily cards with 36pt weather symbol font
+  // UPDATED: Daily cards with 36pt weather symbol font
   for (int i = 0; i < 7; i++) {
     lv_obj_t *card = lv_obj_create(dailyContainer);
     lv_obj_set_size(card, 105, 120);
@@ -366,7 +369,7 @@ void createUI() {
     lv_obj_set_style_text_color(dayL, lv_color_hex(COLOR_TEXT_SECONDARY), 0);
     lv_obj_align(dayL, LV_ALIGN_TOP_MID, 0, 0);
     
-    //Weather symbol instead of text
+    // UPDATED: Weather symbol instead of text
     lv_obj_t *condL = lv_label_create(card);
     lv_obj_set_style_text_font(condL, &lv_font_weather_symbols_36, 0);
     lv_obj_set_style_text_color(condL, lv_color_hex(COLOR_TEXT_PRIMARY), 0);
@@ -434,7 +437,7 @@ void updateWeather() {
   weather.feelsLike = doc["current"]["apparent_temperature"];
   weather.humidity = doc["current"]["relative_humidity_2m"];
   weather.pressure = doc["current"]["pressure_msl"];
-  weather.currentCode = doc["current"]["weather_code"];  //Store code instead of string
+  weather.currentCode = doc["current"]["weather_code"];  // UPDATED: Store code instead of string
   
   String sunrise = doc["daily"]["sunrise"][0].as<String>();
   String sunset = doc["daily"]["sunset"][0].as<String>();
@@ -443,7 +446,7 @@ void updateWeather() {
   
   int currentHour = timeinfo.tm_hour;
   
-  //Store weather codes for hourly forecast
+  // UPDATED: Store weather codes for hourly forecast
   for (int i = 0; i < 6; i++) {
     int offset = i * 2;
     weather.hourly[i].temp = doc["hourly"]["temperature_2m"][currentHour + offset];
@@ -461,7 +464,7 @@ void updateWeather() {
   const char* dayNames[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
   const char* monthNames[] = {"", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
   
-  //Store weather codes for daily forecast
+  // UPDATED: Store weather codes for daily forecast
   for (int i = 0; i < 7; i++) {
     weather.daily[i].high = doc["daily"]["temperature_2m_max"][i];
     weather.daily[i].low = doc["daily"]["temperature_2m_min"][i];
@@ -536,11 +539,11 @@ void updateWeather() {
 void updateWeatherDisplay() {
   lv_label_set_text(currentTempLabel, (String((int)weather.currentTemp) + "°F").c_str());
   
-  //Display 64pt weather symbol
+  // UPDATED: Display 64pt weather symbol
   lv_label_set_text(currentCondLabel, getWeatherSymbol(weather.currentCode).c_str());
   lv_obj_set_style_text_color(currentCondLabel, lv_color_hex(getWeatherSymbolColor(weather.currentCode)), 0);
   
-  // Display weather condition text below the symbol
+  // NEW: Display weather condition text below the symbol
   lv_label_set_text(currentCondTextLabel, getWeatherCondition(weather.currentCode).c_str());
   
   lv_label_set_text(humidityLabel, ("Humidity: " + String((int)weather.humidity) + "%").c_str());
@@ -559,7 +562,7 @@ void updateWeatherDisplay() {
                     (sunsetMin < 10 ? "0" : "") + String(sunsetMin) + (sunsetHour >= 12 ? "PM" : "AM");
   lv_label_set_text(sunsetLabel, sunsetStr.c_str());
   
-  //Display weather symbols in hourly cards
+  // UPDATED: Display weather symbols in hourly cards
   for (int i = 0; i < 6; i++) {
     lv_obj_t *card = lv_obj_get_child(hourlyContainer, i);
     lv_label_set_text(lv_obj_get_child(card, 0), weather.hourly[i].time.c_str());
@@ -574,7 +577,7 @@ void updateWeatherDisplay() {
     lv_label_set_text(lv_obj_get_child(card, 3), details.c_str());
   }
   
-  //Display weather symbols in daily cards
+  // UPDATED: Display weather symbols in daily cards
   for (int i = 0; i < 7; i++) {
     lv_obj_t *card = lv_obj_get_child(dailyContainer, i);
     String dayStr = (i == 0 ? "Today" : weather.daily[i].dayName) + ", " + weather.daily[i].date;
@@ -619,7 +622,7 @@ void setup() {
   pinMode(TFT_BL, OUTPUT);
   ledcSetup(1, 300, 8);
   ledcAttachPin(TFT_BL, 1);
-  ledcWrite(1, 64); // ← This controls brightness, valid range 0(off)-255(brightest)
+  ledcWrite(1, 166);
   
   createUI();
   
