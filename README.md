@@ -2,6 +2,8 @@
 
 A weather clock display for the **ELECROW CrowPanel 7-inch HMI ESP32 Display (DIS08070H)** showing:
 
+![Alt text](screen_image.jpeg)
+
 - NTP-synced time and date  
 - Current weather conditions from Open-Meteo API  
 - Temperature in Fahrenheit  
