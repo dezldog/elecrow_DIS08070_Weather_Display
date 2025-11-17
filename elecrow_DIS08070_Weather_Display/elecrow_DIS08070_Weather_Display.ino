@@ -28,8 +28,8 @@ LV_FONT_DECLARE(lv_font_weather_symbols_92);
 LV_FONT_DECLARE(lv_font_weather_symbols_120);
 
 // ===== CONFIGURATION =====
-const char* ssid = "airwisp.net";
-const char* password = "s2mantha";
+const char* ssid = "#########";
+const char* password = "########";
 
 const long gmtOffset_sec = -8 * 3600;
 const int daylightOffset_sec = 3600;
