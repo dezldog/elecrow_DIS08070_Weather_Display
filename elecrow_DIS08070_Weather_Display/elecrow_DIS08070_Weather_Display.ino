@@ -242,7 +242,7 @@ void createUI() {
   lv_obj_set_style_text_color(currentCondLabel, lv_color_hex(COLOR_ACCENT), 0);
   lv_obj_align(currentCondLabel, LV_ALIGN_TOP_MID, 0, 5);
   
-  // Text label - STAYS AT Y=112 - DO NOT MOVE!
+  // Text label
   currentCondTextLabel = lv_label_create(lv_scr_act());
   lv_obj_set_style_text_font(currentCondTextLabel, &lv_font_montserrat_20, 0);
   lv_obj_set_style_text_color(currentCondTextLabel, lv_color_hex(COLOR_TEXT_PRIMARY), 0);
